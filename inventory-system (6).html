@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caféeling - Cafe Inventory System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #e8d6c4;
+    --surface: #ddc3a8;
+    --surface2: #caa889;
+    --border: #a27b5d;
+    --text: #4a2f22;
+    --muted: #6d513f;
+    --accent: #8a5b39;
+    --accent-strong: #6d4428;
+    --accent-soft: rgba(109,68,40,.16);
+    --accent2: #70452b;
+    --warn: #9a6f4d;
+    --danger: #5a3424;
+    --purple: #7c5741;
+    --ink-inverse: #fff7ef;
+    --sidebar-w: 220px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:linear-gradient(180deg, #ecdccd 0%, #d8bda2 100%); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+  /* LOGIN */
+  #login-page { display:flex; align-items:center; justify-content:center; min-height:100vh; background:radial-gradient(circle at top left, rgba(109,68,40,.24) 0%, transparent 34%), linear-gradient(135deg, #f0e1d2 0%, #d9bda1 55%, #c29a78 100%); }
+  .login-wrap { display:flex; width:900px; max-width:95vw; min-height:520px; border-radius:20px; overflow:hidden; box-shadow:0 30px 80px rgba(78,49,32,.24); border:1px solid rgba(122,87,62,.45); }
+  .login-left { flex:1; background:linear-gradient(160deg,#7f5435 0%, #9a6f4d 100%); padding:60px 40px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+  .login-left::before { content:''; position:absolute; inset:0; background: radial-gradient(circle at 30% 70%, rgba(255,247,239,.14) 0%, transparent 58%), radial-gradient(circle at 80% 20%, rgba(240,225,210,.12) 0%, transparent 46%); }
+  .login-logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:var(--ink-inverse); margin-bottom:40px; z-index:1; position:relative; }
+  .login-logo span { color:#f3dec9; }
+  .login-left h2 { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--ink-inverse); line-height:1.2; margin-bottom:16px; z-index:1; position:relative; }
+  .login-left p { color:rgba(255,250,243,.86); font-size:14px; line-height:1.6; z-index:1; position:relative; margin-bottom:32px; }
+  .feature-list { z-index:1; position:relative; }
+  .feature-item { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .feature-icon { width:32px; height:32px; border-radius:8px; background:rgba(255,250,243,.22); color:var(--ink-inverse); display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .feature-item span { font-size:13px; color:rgba(255,250,243,.92); }
+  .login-right { flex:1; background:var(--surface); padding:60px 40px; display:flex; flex-direction:column; justify-content:center; }
+  .login-right h3 { font-family:'Syne',sans-serif; font-size:26px; font-weight:700; margin-bottom:6px; }
+  .login-right p { color:var(--muted); font-size:13px; margin-bottom:36px; }
+  .form-group { margin-bottom:20px; }
+  .form-group label { display:block; font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px; }
+  .form-group input { width:100%; padding:12px 16px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s; }
+  .form-group input:focus { border-color:var(--accent); }
+  .hint { font-size:11px; color:var(--muted); margin-top:6px; }
+  .btn-primary { width:100%; padding:13px; background:var(--accent); border:none; border-radius:10px; color:var(--ink-inverse); font-family:'Syne',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all .2s; margin-top:8px; }
+  .btn-primary:hover { background:var(--accent-strong); transform:translateY(-1px); }
+
+  /* APP SHELL */
+  #app { display:none; }
+  .shell { display:flex; min-height:100vh; }
+  .sidebar { width:var(--sidebar-w); background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; left:0; top:0; bottom:0; z-index:100; }
+  .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid var(--border); }
+  .sidebar-logo span { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--text); }
+  .sidebar-logo span b { color:var(--accent); }
+  .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+  .nav-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; cursor:pointer; margin-bottom:4px; color:var(--muted); font-size:13px; font-weight:500; transition:all .15s; user-select:none; }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { background:var(--accent-soft); color:var(--accent2); font-weight:600; }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .sidebar-footer { padding:16px 12px; border-top:1px solid var(--border); }
+  .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; cursor:pointer; color:var(--danger); font-size:13px; font-weight:500; transition:all .15s; }
+  .logout-btn:hover { background:rgba(111,84,68,.12); }
+  .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+  .topbar { height:60px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:50; }
+  .topbar-title { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .topbar-right { display:flex; align-items:center; gap:16px; }
+  .avatar { width:34px; height:34px; border-radius:50%; background:var(--accent); color:var(--ink-inverse); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; }
+  .content { padding:28px; flex:1; }
+
+  .page { display:none; }
+  .page.active { display:block; animation:fadeIn .2s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; position:relative; overflow:hidden; }
+  .stat-card::before { content:''; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; opacity:.15; }
+  .stat-card.blue::before { background:var(--accent); }
+  .stat-card.green::before { background:var(--accent2); }
+  .stat-card.orange::before { background:var(--warn); }
+  .stat-card.purple::before { background:var(--purple); }
+  .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px; }
+  .stat-value { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; }
+  .stat-card.blue .stat-value { color:var(--accent); }
+  .stat-card.green .stat-value { color:var(--accent2); }
+  .stat-card.orange .stat-value { color:var(--warn); }
+  .stat-card.purple .stat-value { color:var(--purple); }
+  .stat-icon { font-size:22px; margin-bottom:10px; }
+
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .btn { padding:9px 18px; border-radius:8px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; transition:all .15s; }
+  .btn-accent { background:var(--accent); color:var(--ink-inverse); }
+  .btn-accent:hover { background:var(--accent-strong); }
+  .btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--text); cursor:pointer; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; transition:all .15s; }
+  .btn-outline:hover { background:var(--surface2); }
+  .btn-del { background:rgba(111,84,68,.12); color:var(--danger); border:none; border-radius:6px; padding:5px 12px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; font-weight:600; transition:all .15s; }
+  .btn-del:hover { background:rgba(111,84,68,.22); }
+
+  .table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:600px; }
+  th { background:var(--surface2); padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; white-space:nowrap; }
+  td { padding:12px 16px; border-top:1px solid var(--border); font-size:13px; }
+  tr:hover td { background:var(--surface2); }
+  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-good { background:rgba(112,69,43,.12); color:var(--accent2); }
+  .badge-low { background:rgba(154,111,77,.22); color:#5f422f; }
+  .badge-out { background:rgba(90,52,36,.16); color:var(--danger); }
+  .badge-in { background:rgba(138,91,57,.16); color:var(--accent); }
+
+  .search-bar { position:relative; }
+  .search-bar input { padding:10px 16px 10px 40px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; width:240px; outline:none; transition:border-color .2s; }
+  .search-bar input:focus { border-color:var(--accent); }
+  .search-bar::before { content:'🔍'; position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:13px; pointer-events:none; }
+
+  .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .chart-title { font-size:13px; font-weight:600; color:var(--muted); margin-bottom:16px; text-transform:uppercase; letter-spacing:.5px; }
+  .recent-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+  .mini-table-wrap { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+  .mini-table-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .mini-table-title { font-size:13px; font-weight:700; }
+  .view-all { font-size:12px; color:var(--accent); cursor:pointer; }
+  .view-all:hover { text-decoration:underline; }
+  .cat-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .cat-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+  .cat-count { font-size:12px; color:var(--muted); background:var(--surface2); padding:3px 10px; border-radius:20px; }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(92,71,57,.28); z-index:999; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; width:480px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
+  .modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+  .modal .form-group { margin-bottom:16px; }
+  .modal .form-group label { display:block; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:7px; }
+  .modal .form-group input, .modal .form-group select { width:100%; padding:11px 14px; background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; }
+  .modal .form-group select option { background:var(--surface2); }
+  .modal .form-group input:focus, .modal .form-group select:focus { border-color:var(--accent); }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .m-btn { padding:10px 20px; border-radius:8px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; }
+  .m-btn-cancel { background:var(--surface2); color:var(--muted); }
+  .m-btn-save { background:var(--accent); color:var(--ink-inverse); }
+  .m-btn-save:hover { background:var(--accent-strong); }
+
+  .filter-btn { padding:7px 16px; border-radius:20px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:12px; cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif; }
+  .filter-btn.active { border-color:var(--accent); color:var(--accent2); background:var(--accent-soft); }
+  .filter-btn:hover { border-color:var(--muted); }
+  .summary-filters { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  .cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+/* Categories - Rectangular Cards */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.cat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0px;  /* Rectangular */
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.cat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cat-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  word-break: break-word;
+}
+.cat-count {
+  font-size: 11px;
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+/* Product table inside card */
+.cat-product-table {
+  width: 100%;
+  font-size: 12px;
+  margin-bottom: 12px;
+  display: table;
+  table-layout: fixed;
+}
+.cat-product-table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(143,122,106,.16);
+  word-break: break-word;
+}
+.cat-product-table tr:last-child td {
+  border-bottom: none;
+}
+.product-name {
+  font-weight: 500;
+  width: 65%;
+}
+.product-stock {
+  text-align: right;
+  color: var(--accent2);
+  font-weight: 600;
+  width: 35%;
+}
+/* Action buttons inside card */
+.cat-card-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+  @media (max-width: 960px) {
+    .login-wrap { width:min(96vw,720px); min-height:auto; flex-direction:column; }
+    .sidebar { position:static; width:100%; }
+    .sidebar-logo { padding-bottom:12px; border-bottom:none; }
+    .sidebar-nav { display:flex; gap:8px; padding:0 12px 14px; overflow-x:auto; }
+    .nav-item { flex:0 0 auto; margin-bottom:0; }
+    .sidebar-footer { border-top:none; padding:0 12px 14px; }
+    .main { margin-left:0; }
+    .recent-grid, .charts-grid { grid-template-columns:1fr; }
+  }
+  @media (max-width: 640px) {
+    .login-left, .login-right { padding:36px 24px; }
+    .topbar { height:auto; padding:16px; flex-direction:column; align-items:flex-start; gap:12px; }
+    .content { padding:20px 16px; }
+    .stats-grid, .form-row { grid-template-columns:1fr; }
+    .section-header { align-items:stretch; }
+    .search-bar, .search-bar input { width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-wrap">
+    <div class="login-left">
+      <div class="login-logo">Café<span>eling</span></div>
+      <h2>Track every bean, bottle, and bake with ease.</h2>
+      <p>Caféeling keeps your cafe inventory, daily stock flow, suppliers, and menu ingredients organized in one calm workspace.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-icon">📦</div><span>Ingredient and supply tracking</span></div>
+        <div class="feature-item"><div class="feature-icon">📊</div><span>Daily stock movement visibility</span></div>
+        <div class="feature-item"><div class="feature-icon">🚚</div><span>Supplier and reorder oversight</span></div>
+        <div class="feature-item"><div class="feature-icon">🍽️</div><span>Recipe-linked menu inventory</span></div>
+      </div>
+    </div>
+    <div class="login-right">
+      <h3>Welcome to Caféeling</h3>
+      <p>Sign in to open your cafe inventory dashboard</p>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="admin@cafeeling.com" value="admin@cafeeling.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Enter your password" value="password">
+        <div class="hint">Demo credentials are pre-filled for quick access</div>
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span>Café<b>eling</b></span></div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)"><span class="nav-icon">🏠</span> Dashboard</div>
+      <div class="nav-item" data-page="products" onclick="showPage('products',this)"><span class="nav-icon">📦</span> Inventory</div>
+      <div class="nav-item" data-page="categories" onclick="showPage('categories',this)"><span class="nav-icon">🗂️</span> Categories</div>
+      <div class="nav-item" data-page="suppliers" onclick="showPage('suppliers',this)"><span class="nav-icon">🚚</span> Suppliers</div>
+      <div class="nav-item" data-page="stockin" onclick="showPage('stockin',this)"><span class="nav-icon">📥</span> Stock In</div>
+      <div class="nav-item" data-page="stockout" onclick="showPage('stockout',this)"><span class="nav-icon">📤</span> Stock Out</div>
+
+      <div class="nav-item" data-page="menu" onclick="showPage('menu',this)"><span class="nav-icon">🍽️</span> Menu</div>
+      <div class="nav-item" data-page="dailystock" onclick="showPage('dailystock',this)"><span class="nav-icon">📅</span> Daily Stock</div>
+      <div class="nav-item" data-page="manageusers" onclick="showPage('manageusers',this)"><span class="nav-icon">👥</span> Team Access</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="logout-btn" onclick="doLogout()"><span>🚪</span> Logout</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Cafe Dashboard</div>
+      <div class="topbar-right">
+        <div style="font-size:12px;color:var(--muted);" id="topbar-user-email">Cafe Owner</div>
+        <div class="avatar" id="topbar-avatar">A</div>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card blue"><div class="stat-icon">📦</div><div class="stat-label">Tracked Items</div><div class="stat-value" id="d-products">0</div></div>
+          <div class="stat-card orange"><div class="stat-icon">⚠️</div><div class="stat-label">Low Stock Alerts</div><div class="stat-value" id="d-lowstock">0</div></div>
+          <div class="stat-card green"><div class="stat-icon">🚚</div><div class="stat-label">Total Suppliers</div><div class="stat-value" id="d-suppliers">0</div></div>
+          <div class="stat-card purple"><div class="stat-icon">📥</div><div class="stat-label">Total Stock In (Units)</div><div class="stat-value" id="d-stockin">0</div></div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;">
+          <div class="chart-title">STOCK BY CATEGORY</div>
+          <canvas id="barChart" height="80"></canvas>
+        </div>
+        <div class="recent-grid">
+          <div class="mini-table-wrap">
+            <div class="mini-table-header">
+              <div class="mini-table-title">Recent Stock In</div>
+              <div class="view-all" onclick="showPage('stockin',document.querySelector('[data-page=stockin]'))">View All</div>
+            </div>
+            <table><thead><tr><th>Item</th><th>Qty</th><th>Date</th></tr></thead><tbody id="recent-in"></tbody></table>
+          </div>
+          <div class="mini-table-wrap">
+            <div class="mini-table-header">
+              <div class="mini-table-title">Recent Stock Out</div>
+              <div class="view-all" onclick="showPage('stockout',document.querySelector('[data-page=stockout]'))">View All</div>
+            </div>
+            <table><thead><tr><th>Item</th><th>Qty</th><th>Date</th></tr></thead><tbody id="recent-out"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="page" id="page-products">
+        <div class="section-header">
+          <div><div class="section-title">Inventory Items</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Manage cafe ingredients, pastry stock, and supply items</div></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-bar"><input type="text" placeholder="Search item..." oninput="renderProducts(this.value)"></div>
+            <button class="btn btn-accent" onclick="openModal('product')">+ Add Item</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;" id="cat-filter-wrap"></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Item ID</th><th>Item Name</th><th>Category</th><th>Unit</th><th>Current Stock</th><th>Reorder Level</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="products-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="page" id="page-categories">
+        <div class="section-header">
+          <div><div class="section-title">Categories</div></div>
+          <button class="btn btn-accent" onclick="openModal('category')">+ Add Category</button>
+        </div>
+        <div class="cat-grid" id="cat-grid"></div>
+      </div>
+
+      <!-- SUPPLIERS -->
+      <div class="page" id="page-suppliers">
+        <div class="section-header">
+          <div><div class="section-title">Suppliers</div><div style="font-size:12px;color:var(--muted);margin-top:3px;" id="sup-count-lbl"></div></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-bar"><input type="text" placeholder="Search supplier..." oninput="renderSuppliers(this.value)"></div>
+            <button class="btn btn-accent" onclick="openModal('supplier')">+ Add Supplier</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Supplier ID</th><th>Supplier Name</th><th>Contact Name</th><th>Phone No.</th><th>Category</th><th>Actions</th></tr></thead>
+          <tbody id="suppliers-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- STOCK IN -->
+      <div class="page" id="page-stockin">
+        <div class="section-header">
+          <div><div class="section-title">Stock In</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Record ingredients and supplies received into the cafe stockroom</div></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-bar"><input type="text" id="stockin-search" placeholder="Search..." oninput="renderStockIn(this.value)"></div>
+            <button class="btn btn-outline" style="background:rgba(143,113,93,.12);color:var(--accent2);border-color:var(--accent2);white-space:nowrap;" onclick="openRegularStockIn()">📋 Regular Stock In</button>
+            <button class="btn btn-accent" onclick="openModal('stockin')">+ Add Stock In</button>
+          </div>
+        </div>
+        <!-- Regular Stock In day table (shown when active) -->
+        <div id="reg-stockin-panel" style="display:none;margin-bottom:20px;">
+          <div style="background:var(--surface);border:1.5px solid var(--accent2);border-radius:14px;overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--accent2);">📋 Regular Stock In</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px;">Enter qty received for each item today — <span id="reg-stockin-date-label"></span></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline" onclick="closeRegularStockIn()">Cancel</button>
+                <button class="btn" style="background:var(--accent2);color:var(--ink-inverse);" onclick="saveRegularStockInAll()">✅ Save All Stock In</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="min-width:600px;">
+                <thead><tr><th>Item Name</th><th>Category</th><th>Current Stock</th><th>Qty Received</th><th>Unit</th><th>Supplier</th></tr></thead>
+                <tbody id="reg-stockin-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Stock In ID</th><th>Item Name</th><th>Category</th><th>Qty Received</th><th>Unit</th><th>Supplier</th><th>Date</th><th>Transaction</th><th>Actions</th></tr></thead>
+          <tbody id="stockin-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- STOCK OUT -->
+      <div class="page" id="page-stockout">
+        <div class="section-header">
+          <div><div class="section-title">Stock Out</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Record ingredients and supplies used from the cafe stockroom</div></div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="search-bar"><input type="text" id="stockout-search" placeholder="Search..." oninput="renderStockOut(this.value)"></div>
+            <button class="btn btn-outline" style="background:rgba(111,84,68,.12);color:var(--danger);border-color:var(--danger);white-space:nowrap;" onclick="openRegularStockOut()">📋 Regular Stock Out</button>
+            <button class="btn btn-accent" onclick="openModal('stockout')">+ Add Stock Out</button>
+          </div>
+        </div>
+        <!-- Regular Stock Out day table (shown when active) -->
+        <div id="reg-stockout-panel" style="display:none;margin-bottom:20px;">
+          <div style="background:var(--surface);border:1.5px solid var(--danger);border-radius:14px;overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--danger);">📋 Regular Stock Out</div>
+                <div style="font-size:11px;color:var(--muted);margin-top:2px;">Enter qty moved out for each item today — <span id="reg-stockout-date-label"></span></div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline" onclick="closeRegularStockOut()">Cancel</button>
+                <button class="btn" style="background:var(--danger);color:var(--ink-inverse);" onclick="saveRegularStockOutAll()">✅ Save All Stock Out</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table style="min-width:600px;">
+                <thead><tr><th>Item Name</th><th>Category</th><th>Current Stock</th><th>Qty Out</th><th>Unit</th><th>Reason</th></tr></thead>
+                <tbody id="reg-stockout-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Stock Out ID</th><th>Item Name</th><th>Category</th><th>Qty Used</th><th>Unit</th><th>Date Used</th><th>Transaction Type</th><th>Actions</th></tr></thead>
+          <tbody id="stockout-tbody"></tbody></table>
+        </div>
+      </div>
+
+<!-- MENU PAGE -->
+<div class="page" id="page-menu">
+  <div class="section-header">
+    <div><div class="section-title">Menu Recipes</div></div>
+    <button class="btn btn-accent" onclick="openMenuModal()">+ Add Menu Item</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Menu Item</th><th>Ingredients</th><th>Price</th><th>Actions</th><th>Order</th></tr>
+      </thead>
+      <tbody id="menu-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DAILY STOCK PAGE -->
+<div class="page" id="page-dailystock">
+  <div class="section-header">
+    <div><div class="section-title">Daily Stock Take</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Apply manual adjustments to stock levels</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-accent" style="background:var(--warn);color:var(--text);" onclick="endShift()">🔚 End Shift</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Item Name</th><th>Current Stock</th><th>Adjustment</th><th>New Stock</th><th>Reason</th><th>Action</th></tr>
+      </thead>
+      <tbody id="dailystock-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MANAGE USERS PAGE -->
+<div class="page" id="page-manageusers">
+  <div class="section-header">
+    <div><div class="section-title">Team Access</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Manage owner, manager, and staff accounts for daily cafe operations</div></div>
+    <button class="btn btn-accent" onclick="openUserModal()">+ Add Team Member</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Team ID</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+    </div>
+  </main>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <h3 id="pm-title">Add Inventory Item</h3>
+    <input type="hidden" id="pm-id">
+    <div class="form-row">
+      <div class="form-group"><label>Item Name</label><input type="text" id="pm-name" placeholder="Item name"></div>
+      <div class="form-group"><label>Category</label><select id="pm-cat"></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Unit</label><input type="text" id="pm-unit" placeholder="kg, pcs, bottle..."></div>
+      <div class="form-group"><label>Current Stock</label><input type="number" id="pm-stock" value="0" min="0"></div>
+    </div>
+    <div class="form-group"><label>Reorder Level</label><input type="number" id="pm-reorder" value="10" min="0"></div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('product')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveProduct()">Save Item</button>
+    </div>
+  </div>
+</div>
+<!-- Modal for showing all products in a category -->
+<div class="modal-overlay" id="modal-category-products">
+  <div class=" modal" style="max-width:600px;">
+    <h3 id="category-products-title">Items in <span></span></h3>
+    <div id="category-products-list" style="max-height:400px; overflow-y:auto;">
+      <table style="width:100%;">
+        <thead><tr><th>Product</th><th>Stock</th><th>Unit</th></tr></thead>
+        <tbody id="category-products-tbody"></tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('category-products')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-category">
+  <div class="modal">
+    <h3 id="category-modal-title">Add Category</h3>
+    <div class="form-group"><label>Category Name</label><input type="text" id="cm-name" placeholder="e.g. Beverages"></div>
+    <input type="hidden" id="cm-original">
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('category')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveCategoryEdit()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-supplier">
+  <div class="modal">
+    <h3 id="sm-title">Add Supplier</h3>
+    <input type="hidden" id="sm-id">
+    <div class="form-row">
+      <div class="form-group"><label>Supplier Name</label><input type="text" id="sm-name"></div>
+      <div class="form-group"><label>Contact Person</label><input type="text" id="sm-contact"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Phone No.</label><input type="text" id="sm-phone"></div>
+      <div class="form-group"><label>Category</label><select id="sm-cat"></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('supplier')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveSupplier()">Save Supplier</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-stockin">
+  <div class="modal">
+    <h3>Add Stock In</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Item</label><select id="si-item"></select></div>
+      <div class="form-group"><label>Qty Received</label><input type="number" id="si-qty" value="1" min="1"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Supplier</label><select id="si-supplier"></select></div>
+      <div class="form-group"><label>Date</label><input type="date" id="si-date"></div>
+    </div>
+    <div class="form-group"><label>Transaction Type</label>
+      <select id="si-type"><option>Purchase</option><option>Return</option><option>Adjustment</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('stockin')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveStockIn()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-stockout">
+  <div class="modal">
+    <h3>Add Stock Out</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Item</label><select id="so-item"></select></div>
+      <div class="form-group"><label>Qty Used</label><input type="number" id="so-qty" value="1" min="1"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Date Used</label><input type="date" id="so-date"></div>
+      <div class="form-group"><label>Transaction Type</label>
+        <select id="so-type"><option>Sale</option><option>Damage</option><option>Expired</option><option>Internal Use</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('stockout')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveStockOut()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <h3 id="um-title">Add Team Member</h3>
+    <input type="hidden" id="um-id">
+    <div class="form-group"><label>Email Address</label><input type="email" id="um-email" placeholder="user@cafeeling.com"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="um-pass" placeholder="Enter password"></div>
+    <div class="form-group"><label>Role</label>
+      <select id="um-role">
+        <option value="staff">Staff</option>
+        <option value="manager">Manager</option>
+        <option value="owner">Owner</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('user')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="saveUser()">Save Team Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- END SHIFT PRINT MODAL -->
+<div class="modal-overlay" id="modal-endshift">
+  <div class="modal" style="width:600px;max-width:98vw;">
+    <h3>🔚 End of Shift Report</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px;">Review the cafe shift summary before printing. Stock In/Out records will be cleared after confirmation.</p>
+    <div id="endshift-report" style="background:var(--surface2);border-radius:10px;padding:16px;max-height:400px;overflow-y:auto;font-size:13px;"></div>
+    <div class="modal-footer" style="margin-top:20px;">
+      <button class="m-btn m-btn-cancel" onclick="closeModal('endshift')">Cancel</button>
+      <button class="m-btn m-btn-save" onclick="confirmEndShift()">🖨️ Print & End Shift</button>
+    </div>
+  </div>
+</div>
+<script>
+var barChart = null;
+
+function showToast(msg, duration = 2500) {
+  let toast = document.getElementById('global-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'global-toast';
+    toast.style.cssText = 'position:fixed; bottom:24px; right:24px; background:var(--text); color:var(--ink-inverse); padding:12px 20px; border-radius:12px; font-size:13px; z-index:9999; opacity:0; transition:opacity 0.2s; pointer-events:none; box-shadow:0 14px 30px rgba(92,71,57,.18);';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, duration);
+}
+// ==================== MENU FUNCTIONS ====================
+function renderMenu() {
+  const tbody = document.getElementById('menu-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = S.menuItems.map(item => `
+    <tr>
+      <td style="font-weight:600">${escapeHtml(item.name)}</td>
+      <td>${item.ingredients.map(ing => {
+        const prod = S.products.find(p => p.id === ing.productId);
+        return prod ? `${prod.name} (${ing.qty} ${prod.unit})` : '?';
+      }).join(', ')}</td>
+      <td>$${item.price.toFixed(2)}</td>
+      <td>
+        <button class="btn-outline" onclick="editMenuItem('${item.id}')">Edit</button>
+        <button class="btn-del" onclick="deleteMenuItem('${item.id}')">Del</button>
+      </td>
+      <td><button class="btn-accent" style="padding:4px 12px" onclick="placeOrder('${item.id}')">Place Order</button></td>
+    </tr>
+  `).join('');
+}
+
+function openMenuModal(editId = null) {
+  // remove existing modal if any
+  const oldModal = document.getElementById('menu-modal');
+  if (oldModal) oldModal.remove();
+
+  const modalDiv = document.createElement('div');
+  modalDiv.id = 'menu-modal';
+  modalDiv.className = 'modal-overlay';
+  modalDiv.style.display = 'flex';
+  modalDiv.innerHTML = `
+    <div class="modal" style="width:550px">
+      <h3>${editId ? 'Edit Menu Item' : 'Add Menu Item'}</h3>
+      <div class="form-group"><label>Menu Name</label><input type="text" id="menu-name" placeholder="e.g. Spanish Latte"></div>
+      <div class="form-group"><label>Price ($)</label><input type="number" id="menu-price" step="0.01" placeholder="0.00"></div>
+      <div id="ingredients-container"></div>
+      <button type="button" class="btn-outline" style="margin-bottom:10px" onclick="addIngredientRow()">+ Add Ingredient</button>
+      <div class="modal-footer">
+        <button class="m-btn m-btn-cancel" onclick="closeMenuModal()">Cancel</button>
+        <button class="m-btn m-btn-save" onclick="saveMenuItem('${editId || ''}')">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modalDiv);
+
+  if (editId) {
+    const item = S.menuItems.find(i => i.id === editId);
+    if (item) {
+      document.getElementById('menu-name').value = item.name;
+      document.getElementById('menu-price').value = item.price;
+      item.ingredients.forEach(ing => addIngredientRow(ing.productId, ing.qty));
+    }
+  } else {
+    addIngredientRow(); // one empty row
+  }
+}
+
+function addIngredientRow(selectedProductId = '', qty = '') {
+  const container = document.getElementById('ingredients-container');
+  const productOptions = S.products.map(p => `<option value="${p.id}" ${p.id === selectedProductId ? 'selected' : ''}>${p.name} (${p.unit})</option>`).join('');
+  const row = document.createElement('div');
+  row.className = 'form-row';
+  row.style.marginBottom = '8px';
+  row.innerHTML = `
+    <select class="ingredient-product" style="width:100%">${productOptions}</select>
+    <input type="number" class="ingredient-qty" placeholder="Qty" value="${qty}" step="any" style="width:100%">
+    <button type="button" class="btn-del" onclick="this.parentElement.remove()">✖</button>
+  `;
+  container.appendChild(row);
+}
+
+function saveMenuItem(editId) {
+  const name = document.getElementById('menu-name').value.trim();
+  if (!name) { alert('Menu name required'); return; }
+  const price = parseFloat(document.getElementById('menu-price').value) || 0;
+  const rows = document.querySelectorAll('#ingredients-container .form-row');
+  const ingredients = [];
+  for (let row of rows) {
+    const productId = row.querySelector('.ingredient-product').value;
+    const qty = parseFloat(row.querySelector('.ingredient-qty').value);
+    if (productId && qty > 0) ingredients.push({ productId, qty });
+  }
+  if (ingredients.length === 0) { alert('Add at least one ingredient'); return; }
+
+  if (editId) {
+    const idx = S.menuItems.findIndex(i => i.id === editId);
+    if (idx !== -1) S.menuItems[idx] = { ...S.menuItems[idx], name, price, ingredients };
+  } else {
+    const newId = 'MENU-' + String(S.mc++).padStart(3, '0');
+    S.menuItems.push({ id: newId, name, price, ingredients });
+  }
+  closeMenuModal();
+  renderMenu();
+}
+
+function deleteMenuItem(id) {
+  if (confirm('Delete this menu item?')) {
+    S.menuItems = S.menuItems.filter(i => i.id !== id);
+    renderMenu();
+  }
+}
+
+function closeMenuModal() {
+  const modal = document.getElementById('menu-modal');
+  if (modal) modal.remove();
+}
+
+function placeOrder(menuId) {
+  const item = S.menuItems.find(i => i.id === menuId);
+  if (!item) return;
+  let qty = prompt(`How many orders of ${item.name}?`, '1');
+  qty = parseInt(qty);
+  if (isNaN(qty) || qty <= 0) return;
+
+  let insufficient = [];
+  for (let ing of item.ingredients) {
+    const prod = S.products.find(p => p.id === ing.productId);
+    if (!prod) continue;
+    const needed = ing.qty * qty;
+    if (prod.stock < needed) insufficient.push(`${prod.name} (needed ${needed} ${prod.unit}, only ${prod.stock})`);
+  }
+  if (insufficient.length > 0) {
+    alert('Insufficient stock:\n' + insufficient.join('\n'));
+    return;
+  }
+
+  for (let ing of item.ingredients) {
+    const prod = S.products.find(p => p.id === ing.productId);
+    const deducted = ing.qty * qty;
+    prod.stock -= deducted;
+    S.stockout.push({
+      id: 'SO-' + String(S.soc++).padStart(3, '0'),
+      product: ing.productId,
+      qty: deducted,
+      date: today(),
+      type: 'Menu Order'
+    });
+  }
+  showToast(`Order placed: ${qty}x ${item.name} – stock updated.`);
+  refreshDash();
+  renderProducts();
+  
+  renderStockOut();
+  if (document.getElementById('page-dailystock').classList.contains('active')) renderDailyStock();
+}
+
+// ==================== DAILY STOCK FUNCTIONS ====================
+function renderDailyStock() {
+  const tbody = document.getElementById('dailystock-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = S.products.map(p => `
+    <tr data-prodid="${p.id}">
+      <td>${escapeHtml(p.name)}</td>
+      <td><span class="current-stock-val">${p.stock}</span> ${p.unit}</td>
+      <td><input type="number" class="adjust-qty" value="0" step="1" style="width:80px"></td>
+      <td class="new-stock-preview">${p.stock}</td>
+      <td><input type="text" class="adjust-reason" placeholder="e.g. spoilage, recount" style="width:120px"></td>
+      <td><button class="btn-outline" onclick="applyStockAdjustment('${p.id}')">Apply</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('#dailystock-tbody .adjust-qty').forEach(input => {
+    input.addEventListener('input', function() {
+      const row = this.closest('tr');
+      const current = parseFloat(row.querySelector('.current-stock-val').innerText);
+      const adj = parseFloat(this.value) || 0;
+      const newStock = current + adj;
+      row.querySelector('.new-stock-preview').innerText = newStock;
+    });
+  });
+}
+
+function applyStockAdjustment(productId) {
+  const row = document.querySelector(`#dailystock-tbody tr[data-prodid="${productId}"]`);
+  if (!row) return;
+  const product = S.products.find(p => p.id === productId);
+  if (!product) return;
+  const adjustment = parseFloat(row.querySelector('.adjust-qty').value) || 0;
+  const reason = row.querySelector('.adjust-reason').value.trim() || 'Manual adjustment';
+  if (adjustment === 0) { alert('Adjustment cannot be zero'); return; }
+  const oldStock = product.stock;
+  product.stock += adjustment;
+
+  if (adjustment > 0) {
+    const rec = {
+      id: 'SI-' + String(S.sic++).padStart(3, '0'),
+      product: productId,
+      qty: adjustment,
+      supplier: 'ADJUSTMENT',
+      date: today(),
+      type: 'Stock Take',
+      notes: reason
+    };
+    S.stockin.push(rec);
+    S.shiftStockIn.push(rec);
+  } else if (adjustment < 0) {
+    const rec = {
+      id: 'SO-' + String(S.soc++).padStart(3, '0'),
+      product: productId,
+      qty: -adjustment,
+      date: today(),
+      type: 'Stock Take',
+      notes: reason
+    };
+    S.stockout.push(rec);
+    S.shiftStockOut.push(rec);
+  }
+
+  row.querySelector('.adjust-qty').value = '0';
+  row.querySelector('.adjust-reason').value = '';
+  row.querySelector('.new-stock-preview').innerText = product.stock;
+  row.querySelector('.current-stock-val').innerText = product.stock;
+  showToast(`Stock of ${product.name} adjusted by ${adjustment} (${reason})`);
+  refreshDash();
+  renderProducts();
+  
+  renderStockIn();
+  renderStockOut();
+}
+
+// ==================== END SHIFT ====================
+function endShift() {
+  const shiftIn  = S.stockin;
+  const shiftOut = S.stockout;
+  const dateStr  = new Date().toLocaleString('en-PH', {dateStyle:'full', timeStyle:'short'});
+
+  // Build per-item net movement map
+  const netMap = {};
+  shiftIn.forEach(r => {
+    if (!netMap[r.product]) netMap[r.product] = { in: 0, out: 0 };
+    netMap[r.product].in += r.qty;
+  });
+  shiftOut.forEach(r => {
+    if (!netMap[r.product]) netMap[r.product] = { in: 0, out: 0 };
+    netMap[r.product].out += r.qty;
+  });
+
+  let html = `<div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:12px;">Shift Report — ${dateStr}</div>`;
+
+  // Net per-item summary table
+  const affectedIds = Object.keys(netMap);
+  if (affectedIds.length > 0) {
+    html += `<div style="font-weight:700;margin-bottom:8px;font-size:13px;">📊 Net Stock Movement This Shift</div>`;
+    html += `<table style="width:100%;font-size:12px;margin-bottom:16px;border-collapse:collapse;">
+      <thead><tr style="color:var(--muted);">
+        <th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);">Item</th>
+        <th style="text-align:center;padding:5px 8px;border-bottom:1px solid var(--border);">Stock In</th>
+        <th style="text-align:center;padding:5px 8px;border-bottom:1px solid var(--border);">Stock Out</th>
+        <th style="text-align:center;padding:5px 8px;border-bottom:1px solid var(--border);">Net</th>
+        <th style="text-align:right;padding:5px 8px;border-bottom:1px solid var(--border);">Current Stock</th>
+      </tr></thead><tbody>`;
+    affectedIds.forEach(pid => {
+      const p = gp(pid);
+      const m = netMap[pid];
+      const net = m.in - m.out;
+      const netColor = net > 0 ? 'var(--accent2)' : net < 0 ? 'var(--danger)' : 'var(--muted)';
+      html += `<tr>
+        <td style="padding:5px 8px;font-weight:600;">${p ? p.name : pid}</td>
+        <td style="padding:5px 8px;text-align:center;color:var(--accent2);">${m.in > 0 ? '+'+m.in+' '+(p?p.unit:'') : '—'}</td>
+        <td style="padding:5px 8px;text-align:center;color:var(--danger);">${m.out > 0 ? '-'+m.out+' '+(p?p.unit:'') : '—'}</td>
+        <td style="padding:5px 8px;text-align:center;font-weight:700;color:${netColor};">${net > 0 ? '+' : ''}${net} ${p?p.unit:''}</td>
+        <td style="padding:5px 8px;text-align:right;font-weight:600;">${p ? p.stock : '—'} ${p?p.unit:''}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Stock In detail
+  html += `<div style="font-weight:700;color:var(--accent2);margin-bottom:6px;">📥 Stock In Records (${shiftIn.length})</div>`;
+  if (shiftIn.length === 0) {
+    html += `<div style="color:var(--muted);margin-bottom:12px;font-size:12px;">No stock in recorded this shift.</div>`;
+  } else {
+    html += `<table style="width:100%;font-size:12px;margin-bottom:14px;border-collapse:collapse;"><thead><tr style="color:var(--muted);"><th style="text-align:left;padding:4px 6px;">Item</th><th style="padding:4px 6px;">Qty</th><th style="padding:4px 6px;">Supplier</th><th style="padding:4px 6px;">Notes</th></tr></thead><tbody>`;
+    shiftIn.forEach(r => {
+      const p = gp(r.product); const sup = gs(r.supplier);
+      html += `<tr><td style="padding:4px 6px;font-weight:600;">${p?p.name:'—'}</td><td style="padding:4px 6px;color:var(--accent2);">+${r.qty} ${p?p.unit:''}</td><td style="padding:4px 6px;color:var(--muted);">${sup?sup.name:(r.supplier||'—')}</td><td style="padding:4px 6px;color:var(--muted);">${r.notes||''}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Stock Out detail
+  html += `<div style="font-weight:700;color:var(--danger);margin-bottom:6px;">📤 Stock Out Records (${shiftOut.length})</div>`;
+  if (shiftOut.length === 0) {
+    html += `<div style="color:var(--muted);font-size:12px;">No stock out recorded this shift.</div>`;
+  } else {
+    html += `<table style="width:100%;font-size:12px;border-collapse:collapse;"><thead><tr style="color:var(--muted);"><th style="text-align:left;padding:4px 6px;">Item</th><th style="padding:4px 6px;">Qty</th><th style="padding:4px 6px;">Reason</th><th style="padding:4px 6px;">Notes</th></tr></thead><tbody>`;
+    shiftOut.forEach(r => {
+      const p = gp(r.product);
+      html += `<tr><td style="padding:4px 6px;font-weight:600;">${p?p.name:'—'}</td><td style="padding:4px 6px;color:var(--danger);">-${r.qty} ${p?p.unit:''}</td><td style="padding:4px 6px;color:var(--muted);">${r.type||'—'}</td><td style="padding:4px 6px;color:var(--muted);">${r.notes||''}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  document.getElementById('endshift-report').innerHTML = html;
+  document.getElementById('modal-endshift').classList.add('open');
+}
+
+function confirmEndShift() {
+  const dateStr  = new Date().toLocaleString('en-PH', {dateStyle:'full', timeStyle:'short'});
+  const shiftIn  = S.stockin;
+  const shiftOut = S.stockout;
+  const user     = document.getElementById('topbar-user-email').textContent;
+
+  // Build net map
+  const netMap = {};
+  S.products.forEach(p => { netMap[p.id] = { in:0, out:0, current: p.stock }; });
+  shiftIn.forEach(r  => { if (netMap[r.product]) netMap[r.product].in  += r.qty; });
+  shiftOut.forEach(r => { if (netMap[r.product]) netMap[r.product].out += r.qty; });
+
+  let pc = `<html><head><title>End of Shift Report</title><style>
+    body{font-family:Arial,sans-serif;padding:32px;color:#5c4739;background:#f6f5ec;max-width:720px;margin:auto;}
+    h1{font-size:20px;margin-bottom:2px;color:#8f715d;}
+    .sub{color:#8f7a6a;font-size:12px;margin-bottom:20px;}
+    h2{font-size:14px;margin:20px 0 6px;border-bottom:2px solid #d9cfbe;padding-bottom:3px;text-transform:uppercase;letter-spacing:.5px;color:#6f5444;}
+    table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+    th{text-align:left;padding:6px 8px;background:#efe7da;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+    td{padding:6px 8px;border-bottom:1px solid #ddd2c1;}
+    .in{color:#8f715d;font-weight:700;} .out{color:#6f5444;font-weight:700;}
+    .net-pos{color:#8f715d;font-weight:700;} .net-neg{color:#6f5444;font-weight:700;} .net-zero{color:#8f7a6a;}
+    .no-rec{color:#8f7a6a;font-size:12px;margin-bottom:12px;}
+    .footer{margin-top:32px;border-top:1px solid #c1b6a4;padding-top:12px;font-size:11px;color:#8f7a6a;}
+    .highlight{background:#f2ece1;}
+  </style></head><body>
+  <h1>Caféeling - End of Shift Report</h1>
+  <div class="sub">Generated: ${dateStr} &nbsp;|&nbsp; Closed by: ${user}</div>
+
+  <h2>📊 Net Stock Movement This Shift</h2>
+  <table><thead><tr><th>Item</th><th>Category</th><th>Stock In (+)</th><th>Stock Out (−)</th><th>Net Change</th><th>Current Stock</th><th>Unit</th></tr></thead><tbody>`;
+
+  S.products.forEach(p => {
+    const m = netMap[p.id] || {in:0,out:0};
+    const net = m.in - m.out;
+    if (net === 0 && m.in === 0) return; // skip untouched
+    const netClass = net > 0 ? 'net-pos' : net < 0 ? 'net-neg' : 'net-zero';
+    pc += `<tr class="${net!==0?'highlight':''}"><td><b>${p.name}</b></td><td>${p.category}</td>
+      <td class="in">${m.in > 0 ? '+'+m.in : '—'}</td>
+      <td class="out">${m.out > 0 ? '-'+m.out : '—'}</td>
+      <td class="${netClass}">${net>0?'+':''}${net}</td>
+      <td><b>${p.stock}</b></td><td>${p.unit}</td></tr>`;
+  });
+  pc += `</tbody></table>
+
+  <h2>📥 Stock In Records</h2>`;
+  if (shiftIn.length === 0) {
+    pc += `<p class="no-rec">No stock in recorded this shift.</p>`;
+  } else {
+    pc += `<table><thead><tr><th>ID</th><th>Item</th><th>Qty</th><th>Unit</th><th>Supplier</th><th>Type</th><th>Notes</th></tr></thead><tbody>`;
+    shiftIn.forEach(r => {
+      const p = gp(r.product); const sup = gs(r.supplier);
+      pc += `<tr><td style="color:#999">${r.id}</td><td><b>${p?p.name:'—'}</b></td><td class="in">+${r.qty}</td><td>${p?p.unit:''}</td><td>${sup?sup.name:(r.supplier||'—')}</td><td>${r.type||''}</td><td>${r.notes||''}</td></tr>`;
+    });
+    pc += `</tbody></table>`;
+  }
+
+  pc += `<h2>📤 Stock Out Records</h2>`;
+  if (shiftOut.length === 0) {
+    pc += `<p class="no-rec">No stock out recorded this shift.</p>`;
+  } else {
+    pc += `<table><thead><tr><th>ID</th><th>Item</th><th>Qty</th><th>Unit</th><th>Reason</th><th>Notes</th></tr></thead><tbody>`;
+    shiftOut.forEach(r => {
+      const p = gp(r.product);
+      pc += `<tr><td style="color:#999">${r.id}</td><td><b>${p?p.name:'—'}</b></td><td class="out">-${r.qty}</td><td>${p?p.unit:''}</td><td>${r.type||'—'}</td><td>${r.notes||''}</td></tr>`;
+    });
+    pc += `</tbody></table>`;
+  }
+
+  pc += `<h2>📦 Full Stock Snapshot</h2>
+  <table><thead><tr><th>Item</th><th>Category</th><th>Current Stock</th><th>Unit</th><th>Reorder Lvl</th><th>Status</th></tr></thead><tbody>`;
+  S.products.forEach(p => {
+    const status = p.stock===0 ? 'OUT OF STOCK' : p.stock<=p.reorder ? 'LOW STOCK' : 'Good';
+    pc += `<tr><td>${p.name}</td><td>${p.category}</td><td><b>${p.stock}</b></td><td>${p.unit}</td><td>${p.reorder}</td><td>${status}</td></tr>`;
+  });
+  pc += `</tbody></table>
+  <div class="footer">Caféeling &nbsp;|&nbsp; Shift closed by ${user} &nbsp;|&nbsp; ${dateStr}</div>
+  </body></html>`;
+
+  const w = window.open('','_blank');
+  w.document.write(pc);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+
+  // Clear stock movement records for the next shift
+  S.stockin = [];
+  S.stockout = [];
+  S.shiftStockIn  = [];
+  S.shiftStockOut = [];
+  closeModal('endshift');
+  renderStockIn();
+  renderStockOut();
+  refreshDash();
+  showToast('Shift ended. Stock In/Out records cleared.');
+}
+
+// ==================== REGULAR STOCK IN (inline panel) ====================
+function openRegularStockIn() {
+  const panel = document.getElementById('reg-stockin-panel');
+  panel.style.display = 'block';
+  document.getElementById('reg-stockin-date-label').textContent = new Date().toLocaleDateString('en-PH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  const defaultSupplierId = S.suppliers.length > 0 ? S.suppliers[0].id : '';
+  const supplierOptions = S.suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+  const tbody = document.getElementById('reg-stockin-tbody');
+  tbody.innerHTML = S.products.map(p => `
+    <tr data-prodid="${p.id}">
+      <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+      <td style="color:var(--muted);">${p.category}</td>
+      <td><b>${p.stock}</b> ${p.unit}</td>
+      <td><input type="number" class="rsi-qty-input" value="" min="0" placeholder="0"
+          style="width:80px;padding:6px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;"
+          oninput="this.style.borderColor = this.value>0 ? 'var(--accent2)' : 'var(--border)'"></td>
+      <td style="color:var(--muted);">${p.unit}</td>
+      <td><select class="rsi-sup-select" style="padding:6px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none;">${supplierOptions}</select></td>
+    </tr>
+  `).join('');
+
+  // Scroll to panel
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function closeRegularStockIn() {
+  document.getElementById('reg-stockin-panel').style.display = 'none';
+}
+
+function saveRegularStockInAll() {
+  const rows = document.querySelectorAll('#reg-stockin-tbody tr');
+  let count = 0;
+  const dateStr = today();
+
+  rows.forEach(row => {
+    const pid = row.dataset.prodid;
+    const qtyInput = row.querySelector('.rsi-qty-input');
+    const qty = parseInt(qtyInput.value) || 0;
+    if (qty <= 0) return; // skip blank / zero rows
+
+    const supplierId = row.querySelector('.rsi-sup-select').value;
+    const record = {
+      id: 'SI-' + pad(S.sic++),
+      product: pid,
+      qty: qty,
+      supplier: supplierId,
+      date: dateStr,
+      type: 'Regular Stock In',
+      notes: 'Batch entry'
+    };
+    addStockInRecord(record);
+    count++;
+  });
+
+  if (count === 0) { alert('No quantities entered. Fill in at least one item.'); return; }
+
+  closeRegularStockIn();
+  renderStockIn();
+  refreshDash();
+  renderProducts();
+  
+  if (document.getElementById('page-dailystock').classList.contains('active')) renderDailyStock();
+  showToast(`✅ Regular Stock In saved — ${count} item(s) recorded.`);
+}
+
+// ==================== REGULAR STOCK OUT (inline panel) ====================
+function openRegularStockOut() {
+  const panel = document.getElementById('reg-stockout-panel');
+  panel.style.display = 'block';
+  document.getElementById('reg-stockout-date-label').textContent = new Date().toLocaleDateString('en-PH', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+  const reasonOptions = ['Moved to Counter','Transferred','Spoilage','Expired','Damage','Internal Use','Other']
+    .map(r => `<option>${r}</option>`).join('');
+
+  const tbody = document.getElementById('reg-stockout-tbody');
+  tbody.innerHTML = S.products.map(p => `
+    <tr data-prodid="${p.id}">
+      <td style="font-weight:600;">${escapeHtml(p.name)}</td>
+      <td style="color:var(--muted);">${p.category}</td>
+      <td><b>${p.stock}</b> ${p.unit}</td>
+      <td><input type="number" class="rso-qty-input" value="" min="0" placeholder="0"
+          style="width:80px;padding:6px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;"
+          oninput="this.style.borderColor = this.value>0 ? 'var(--danger)' : 'var(--border)'; validateRsoRow(this, ${p.stock})"></td>
+      <td style="color:var(--muted);">${p.unit}</td>
+      <td><select class="rso-reason-select" style="padding:6px 8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none;">${reasonOptions}</select></td>
+    </tr>
+  `).join('');
+
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function validateRsoRow(input, maxStock) {
+  const qty = parseInt(input.value) || 0;
+  if (qty > maxStock) {
+    input.style.borderColor = 'var(--warn)';
+    input.title = `Max available: ${maxStock}`;
+  } else if (qty > 0) {
+    input.style.borderColor = 'var(--danger)';
+    input.title = '';
+  } else {
+    input.style.borderColor = 'var(--border)';
+    input.title = '';
+  }
+}
+
+function closeRegularStockOut() {
+  document.getElementById('reg-stockout-panel').style.display = 'none';
+}
+
+function saveRegularStockOutAll() {
+  const rows = document.querySelectorAll('#reg-stockout-tbody tr');
+  let count = 0;
+  let errors = [];
+  const dateStr = today();
+
+  rows.forEach(row => {
+    const pid = row.dataset.prodid;
+    const qtyInput = row.querySelector('.rso-qty-input');
+    const qty = parseInt(qtyInput.value) || 0;
+    if (qty <= 0) return;
+
+    const p = gp(pid);
+    if (!p) return;
+    if (qty > p.stock) {
+      errors.push(`${p.name}: requested ${qty} but only ${p.stock} ${p.unit} available`);
+      return;
+    }
+
+    const reason = row.querySelector('.rso-reason-select').value;
+    const record = {
+      id: 'SO-' + pad(S.soc++),
+      product: pid,
+      qty: qty,
+      date: dateStr,
+      type: reason,
+      notes: 'Batch entry'
+    };
+    p = addStockOutRecord(record);
+    if (p.stock <= p.reorder) showToast(`⚠️ Low stock: ${p.name} (${p.stock} ${p.unit} left)`);
+    count++;
+  });
+
+  if (errors.length > 0) {
+    alert('Some items could not be saved due to insufficient stock:\n\n' + errors.join('\n'));
+  }
+
+  if (count === 0 && errors.length === 0) { alert('No quantities entered. Fill in at least one item.'); return; }
+  if (count === 0) return;
+
+  closeRegularStockOut();
+  renderStockOut();
+  refreshDash();
+  renderProducts();
+  
+  if (document.getElementById('page-dailystock').classList.contains('active')) renderDailyStock();
+  showToast(`✅ Regular Stock Out saved — ${count} item(s) recorded.`);
+}
+
+// ==================== USERS ====================
+function renderUsers() {
+  const tbody = document.getElementById('users-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = S.users.map(u => `
+    <tr>
+      <td style="color:var(--muted);font-size:12px">${u.id}</td>
+      <td style="font-weight:600">${escapeHtml(u.email)}</td>
+      <td><span class="badge ${u.role==='owner'?'badge-in':u.role==='manager'?'badge-good':'badge-low'}">${u.role}</span></td>
+      <td style="color:var(--muted);font-size:12px">${u.added}</td>
+      <td>
+        <button class="btn-outline" onclick="editUser('${u.id}')">Edit</button>
+        ${u.id !== 'USR-001' ? `<button class="btn-del" onclick="deleteUser('${u.id}')">Del</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal() {
+  document.getElementById('um-title').textContent = 'Add Team Member';
+  document.getElementById('um-id').value = '';
+  document.getElementById('um-email').value = '';
+  document.getElementById('um-pass').value = '';
+  document.getElementById('um-role').value = 'staff';
+  document.getElementById('modal-user').classList.add('open');
+}
+
+function editUser(id) {
+  const u = S.users.find(u => u.id === id);
+  if (!u) return;
+  document.getElementById('um-title').textContent = 'Edit Team Member';
+  document.getElementById('um-id').value = u.id;
+  document.getElementById('um-email').value = u.email;
+  document.getElementById('um-pass').value = u.password;
+  document.getElementById('um-role').value = u.role;
+  document.getElementById('modal-user').classList.add('open');
+}
+
+function saveUser() {
+  const id = document.getElementById('um-id').value;
+  const email = document.getElementById('um-email').value.trim();
+  const pass = document.getElementById('um-pass').value;
+  const role = document.getElementById('um-role').value;
+  if (!email) { alert('Please enter an email address.'); return; }
+  if (!pass) { alert('Please enter a password.'); return; }
+  if (!email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  const existingUser = id ? S.users.find(u => u.id === id) : null;
+  const ownerCount = S.users.filter(u => u.role === 'owner').length;
+  if (existingUser && existingUser.role === 'owner' && role !== 'owner' && ownerCount === 1) {
+    alert('At least one owner account is required.');
+    return;
+  }
+  if (id) {
+    const idx = S.users.findIndex(u => u.id === id);
+    if (idx > -1) S.users[idx] = { ...S.users[idx], email, password: pass, role };
+    showToast(`Team member "${email}" updated.`);
+  } else {
+    if (S.users.some(u => u.email === email)) { alert('A team member with this email already exists.'); return; }
+    S.users.push({ id: 'USR-' + pad(S.uc++), email, password: pass, role, added: today() });
+    showToast(`Team member "${email}" added.`);
+  }
+  closeModal('user');
+  renderUsers();
+}
+
+function deleteUser(id) {
+  const target = S.users.find(u => u.id === id);
+  if (!target) return;
+  if (target.role === 'owner' && S.users.filter(u => u.role === 'owner').length === 1) {
+    alert('At least one owner account is required.');
+    return;
+  }
+  if (!confirm('Delete this team member?')) return;
+  S.users = S.users.filter(u => u.id !== id);
+  renderUsers();
+  showToast('Team member deleted.');
+}
+var S = {
+  // ---------- CATEGORIES ----------
+  // From sheet: COFFEE | NON-COFFEE | FRUIT TEA | MILK TEA | PASTRIES | Packaging
+  categories: ['Coffee', 'Non-Coffee', 'Fruit Tea', 'Milk Tea', 'Pastries', 'Packaging'],
+
+  // ---------- PRODUCTS (ingredients) ----------
+  // Derived from all unique ingredients across all menu items in the sheet
+  products: [
+    // Coffee ingredients
+    { id: 'PROD-001', name: 'Coffee Bean (Espresso)', category: 'Coffee', unit: 'shot', stock: 500, reorder: 100 },
+    // Milk & Cream
+    { id: 'PROD-002', name: 'Condensed Milk', category: 'Non-Coffee', unit: 'ml', stock: 20000, reorder: 5000 },
+    { id: 'PROD-003', name: 'Fresh Milk', category: 'Non-Coffee', unit: 'ml', stock: 50000, reorder: 10000 },
+    { id: 'PROD-004', name: 'Full Cream Milk', category: 'Milk Tea', unit: 'ml', stock: 15000, reorder: 3000 },
+    { id: 'PROD-005', name: 'Whipped Cream', category: 'Coffee', unit: 'g', stock: 8000, reorder: 2000 },
+    // Syrups & Sauces
+    { id: 'PROD-006', name: 'Chocolate Syrup', category: 'Non-Coffee', unit: 'ml', stock: 15000, reorder: 3000 },
+    { id: 'PROD-007', name: 'Caramel Syrup', category: 'Coffee', unit: 'ml', stock: 12000, reorder: 2500 },
+    { id: 'PROD-008', name: 'Vanilla Syrup', category: 'Coffee', unit: 'ml', stock: 10000, reorder: 2000 },
+    { id: 'PROD-009', name: 'Wintermelon Syrup', category: 'Milk Tea', unit: 'ml', stock: 8000, reorder: 1500 },
+    { id: 'PROD-010', name: 'Green Apple Syrup', category: 'Fruit Tea', unit: 'ml', stock: 6000, reorder: 1200 },
+    { id: 'PROD-011', name: 'Lychee Syrup', category: 'Fruit Tea', unit: 'ml', stock: 5000, reorder: 1000 },
+    { id: 'PROD-012', name: 'Salted Cream / Salt Foam', category: 'Milk Tea', unit: 'ml', stock: 4000, reorder: 800 },
+    // Powders & Bases
+    { id: 'PROD-013', name: 'Dark Chocolate Powder', category: 'Non-Coffee', unit: 'g', stock: 5000, reorder: 1000 },
+    { id: 'PROD-014', name: 'Matcha Powder', category: 'Non-Coffee', unit: 'g', stock: 3000, reorder: 500 },
+    { id: 'PROD-015', name: 'Taro Powder', category: 'Milk Tea', unit: 'g', stock: 3000, reorder: 600 },
+    { id: 'PROD-016', name: 'Cinnamon Powder', category: 'Non-Coffee', unit: 'g', stock: 2000, reorder: 400 },
+    // Tea Bases
+    { id: 'PROD-017', name: 'Tea Base (Green Tea)', category: 'Fruit Tea', unit: 'ml', stock: 10000, reorder: 2000 },
+    { id: 'PROD-018', name: 'Black Tea', category: 'Fruit Tea', unit: 'ml', stock: 8000, reorder: 1500 },
+    { id: 'PROD-019', name: 'Brewed Black Tea', category: 'Milk Tea', unit: 'ml', stock: 8000, reorder: 1500 },
+    // Add-ins
+    { id: 'PROD-020', name: 'Tapioca Pearls', category: 'Milk Tea', unit: 'g', stock: 5000, reorder: 1000 },
+    { id: 'PROD-021', name: 'Fresh Cucumber Slices', category: 'Fruit Tea', unit: 'slices', stock: 200, reorder: 40 },
+    { id: 'PROD-022', name: 'Lemon Juice / Lemon Slice', category: 'Fruit Tea', unit: 'ml', stock: 3000, reorder: 600 },
+    { id: 'PROD-023', name: 'Brown Sugar', category: 'Milk Tea', unit: 'g', stock: 4000, reorder: 800 },
+    { id: 'PROD-024', name: 'Sugar', category: 'Non-Coffee', unit: 'ml', stock: 10000, reorder: 2000 },
+    // Pastries
+    { id: 'PROD-025', name: 'Croissant', category: 'Pastries', unit: 'pc', stock: 50, reorder: 10 },
+    { id: 'PROD-026', name: 'Muffins', category: 'Pastries', unit: 'pc', stock: 50, reorder: 10 },
+    { id: 'PROD-027', name: 'Cinnamon (Pastry)', category: 'Pastries', unit: 'pc', stock: 30, reorder: 5 },
+    { id: 'PROD-028', name: 'Blueberry Cheesecake', category: 'Pastries', unit: 'slice', stock: 20, reorder: 5 },
+    { id: 'PROD-029', name: 'Chocolate Brownies', category: 'Pastries', unit: 'pc', stock: 30, reorder: 5 },
+    // Packaging
+    { id: 'PROD-030', name: 'Medium Cup (Grande)', category: 'Packaging', unit: 'pc', stock: 500, reorder: 100 },
+    { id: 'PROD-031', name: 'Large Cup (Venti)', category: 'Packaging', unit: 'pc', stock: 500, reorder: 100 },
+    { id: 'PROD-032', name: 'Cup Lid', category: 'Packaging', unit: 'pc', stock: 1000, reorder: 200 },
+    { id: 'PROD-033', name: 'Straw', category: 'Packaging', unit: 'pc', stock: 1000, reorder: 200 },
+  ],
+
+  // ---------- SUPPLIERS ----------
+  suppliers: [
+    { id: 'SUP-001', name: 'Café Essentials Co.', contact: 'Maria Lopez', phone: '09123456789', category: 'Coffee' },
+    { id: 'SUP-002', name: 'Dairy Fresh Inc.', contact: 'John Reyes', phone: '09234567890', category: 'Non-Coffee' },
+    { id: 'SUP-003', name: 'Sweet Flavors Ltd.', contact: 'Anna Santos', phone: '09345678901', category: 'Fruit Tea' },
+    { id: 'SUP-004', name: 'BulkPowder Supply', contact: 'Carlos Mendoza', phone: '09456789012', category: 'Milk Tea' },
+    { id: 'SUP-005', name: 'Pastry House PH', contact: 'Liza Cruz', phone: '09567890123', category: 'Pastries' },
+    { id: 'SUP-006', name: 'PackPro Supplies', contact: 'Rico Tan', phone: '09678901234', category: 'Packaging' },
+  ],
+
+  // ---------- STOCK IN ----------
+  stockin: [
+    { id: 'SI-001', product: 'PROD-001', qty: 200, supplier: 'SUP-001', date: '2026-04-18', type: 'Purchase' },
+    { id: 'SI-002', product: 'PROD-002', qty: 10000, supplier: 'SUP-002', date: '2026-04-18', type: 'Purchase' },
+    { id: 'SI-003', product: 'PROD-006', qty: 5000, supplier: 'SUP-002', date: '2026-04-19', type: 'Purchase' },
+    { id: 'SI-004', product: 'PROD-003', qty: 20000, supplier: 'SUP-002', date: '2026-04-19', type: 'Purchase' },
+    { id: 'SI-005', product: 'PROD-013', qty: 2000, supplier: 'SUP-004', date: '2026-04-20', type: 'Purchase' },
+    { id: 'SI-006', product: 'PROD-014', qty: 1500, supplier: 'SUP-004', date: '2026-04-20', type: 'Purchase' },
+    { id: 'SI-007', product: 'PROD-025', qty: 30, supplier: 'SUP-005', date: '2026-04-21', type: 'Purchase' },
+    { id: 'SI-008', product: 'PROD-030', qty: 300, supplier: 'SUP-006', date: '2026-04-21', type: 'Purchase' },
+  ],
+
+  // ---------- STOCK OUT ----------
+  stockout: [
+    { id: 'SO-001', product: 'PROD-001', qty: 50, date: '2026-04-18', type: 'Sale' },
+    { id: 'SO-002', product: 'PROD-002', qty: 2000, date: '2026-04-18', type: 'Sale' },
+    { id: 'SO-003', product: 'PROD-006', qty: 800, date: '2026-04-19', type: 'Sale' },
+    { id: 'SO-004', product: 'PROD-003', qty: 3000, date: '2026-04-20', type: 'Sale' },
+    { id: 'SO-005', product: 'PROD-013', qty: 500, date: '2026-04-21', type: 'Sale' },
+  ],
+
+  // ---------- MENU ITEMS (from sheet — ALL menu items with ALL ingredients) ----------
+  menuItems: [
+    // ===== COFFEE =====
+    {
+      id: 'MENU-001', name: 'Spanish Latte', price: 0,
+      ingredients: [
+        { productId: 'PROD-001', qty: 1 },   // coffee bean (espresso) – 1 shot (30ml)
+        { productId: 'PROD-002', qty: 30 },   // condensed milk – 30ml
+        { productId: 'PROD-003', qty: 120 },  // fresh milk – 120ml
+      ]
+    },
+    {
+      id: 'MENU-002', name: 'Ice Americano', price: 0,
+      ingredients: [
+        { productId: 'PROD-001', qty: 2 },    // coffee bean (espresso) – 1-2 shots (30-60ml)
+      ]
+    },
+    {
+      id: 'MENU-003', name: 'Café Mocha', price: 0,
+      ingredients: [
+        { productId: 'PROD-006', qty: 25 },   // chocolate syrup – 20-30ml
+        { productId: 'PROD-003', qty: 120 },  // fresh milk – 120ml
+        { productId: 'PROD-001', qty: 1 },    // coffee bean (espresso) – 1 shot (30ml)
+        { productId: 'PROD-005', qty: 20 },   // whipped cream – 20g (topping)
+      ]
+    },
+    {
+      id: 'MENU-004', name: 'Caramel Macchiato', price: 0,
+      ingredients: [
+        { productId: 'PROD-001', qty: 1 },    // coffee bean (espresso) – 1 shot (30ml)
+        { productId: 'PROD-003', qty: 120 },  // fresh milk – 120ml
+        { productId: 'PROD-007', qty: 18 },   // caramel syrup – 15-20ml (drizzle)
+        { productId: 'PROD-008', qty: 15 },   // vanilla syrup – 15ml
+      ]
+    },
+    {
+      id: 'MENU-005', name: 'Salted Caramel Latte', price: 0,
+      ingredients: [
+        { productId: 'PROD-001', qty: 1 },    // coffee bean (espresso) – 1 shot (30ml)
+        { productId: 'PROD-003', qty: 120 },  // fresh milk – 120ml
+        { productId: 'PROD-007', qty: 20 },   // caramel syrup – 20ml
+        { productId: 'PROD-012', qty: 18 },   // salted cream/salt foam – 15-20ml
+      ]
+    },
+    // ===== NON-COFFEE =====
+    {
+      id: 'MENU-006', name: 'Dark Ice Chocolate', price: 0,
+      ingredients: [
+        { productId: 'PROD-013', qty: 27 },   // dark chocolate powder – 25-30g
+        { productId: 'PROD-024', qty: 18 },   // sugar – 15-20ml (adjust to taste)
+        { productId: 'PROD-003', qty: 150 },  // fresh milk – 150ml
+      ]
+    },
+    {
+      id: 'MENU-007', name: 'Matcha Latte Ice', price: 0,
+      ingredients: [
+        { productId: 'PROD-014', qty: 2 },    // matcha powder – 2g (about 1 tsp)
+        { productId: 'PROD-024', qty: 18 },   // sugar – 15-20ml
+        { productId: 'PROD-003', qty: 150 },  // fresh milk – 150ml
+      ]
+    },
+    // ===== FRUIT TEA =====
+    {
+      id: 'MENU-008', name: 'Green Apple Cucumber', price: 0,
+      ingredients: [
+        { productId: 'PROD-010', qty: 28 },   // green apple syrup – 25-30ml
+        { productId: 'PROD-021', qty: 5 },    // fresh cucumber slices – 4-6 slices
+        { productId: 'PROD-017', qty: 120 },  // tea base (green tea) – 120ml
+        { productId: 'PROD-024', qty: 13 },   // sugar – 10-15ml
+      ]
+    },
+    {
+      id: 'MENU-009', name: 'Lemon Lychee', price: 0,
+      ingredients: [
+        { productId: 'PROD-022', qty: 18 },   // lemon juice/lemon – 15-20ml
+        { productId: 'PROD-011', qty: 25 },   // lychee syrup – 25ml
+        { productId: 'PROD-017', qty: 120 },  // tea base – 120ml
+        { productId: 'PROD-024', qty: 13 },   // sugar – 10-15ml
+      ]
+    },
+    {
+      id: 'MENU-010', name: 'Lemon Black Tea', price: 0,
+      ingredients: [
+        { productId: 'PROD-018', qty: 120 },  // black tea – 120ml
+        { productId: 'PROD-022', qty: 13 },   // lemon slice/lemon – 10-15ml
+        { productId: 'PROD-024', qty: 18 },   // sugar – 15-20ml
+      ]
+    },
+    // ===== MILK TEA =====
+    {
+      id: 'MENU-011', name: 'Wintermelon', price: 0,
+      ingredients: [
+        { productId: 'PROD-009', qty: 35 },   // wintermelon syrup – 30-40ml
+        { productId: 'PROD-004', qty: 120 },  // full cream milk – 120ml
+        { productId: 'PROD-020', qty: 50 },   // tapioca pearls – 50g (¼ cup)
+      ]
+    },
+    {
+      id: 'MENU-012', name: 'Okinawa', price: 0,
+      ingredients: [
+        { productId: 'PROD-004', qty: 120 },  // full cream milk – 120ml
+        { productId: 'PROD-023', qty: 23 },   // brown sugar – 20-25g
+        { productId: 'PROD-020', qty: 50 },   // tapioca pearls – 50g
+      ]
+    },
+    {
+      id: 'MENU-013', name: 'Taro', price: 0,
+      ingredients: [
+        { productId: 'PROD-003', qty: 120 },  // milk – 120ml
+        { productId: 'PROD-015', qty: 28 },   // taro powder – 25-30g
+        { productId: 'PROD-020', qty: 50 },   // tapioca pearls – 50g
+      ]
+    },
+    {
+      id: 'MENU-014', name: 'Salted Caramel (Milk Tea)', price: 0,
+      ingredients: [
+        { productId: 'PROD-019', qty: 100 },  // brewed black tea – 100ml
+        { productId: 'PROD-004', qty: 50 },   // full cream milk – 50ml
+        { productId: 'PROD-007', qty: 20 },   // caramel syrup – 20ml
+        { productId: 'PROD-024', qty: 10 },   // sugar – 10ml
+        { productId: 'PROD-012', qty: 1 },    // salt – 1 pinch
+      ]
+    },
+    // ===== PASTRIES =====
+    { id: 'MENU-015', name: 'Croissant', price: 0, ingredients: [{ productId: 'PROD-025', qty: 1 }] },
+    { id: 'MENU-016', name: 'Muffins', price: 0, ingredients: [{ productId: 'PROD-026', qty: 1 }] },
+    { id: 'MENU-017', name: 'Cinnamon', price: 0, ingredients: [{ productId: 'PROD-027', qty: 1 }] },
+    { id: 'MENU-018', name: 'Blueberry Cheesecake', price: 0, ingredients: [{ productId: 'PROD-028', qty: 1 }] },
+    { id: 'MENU-019', name: 'Chocolate Brownies', price: 0, ingredients: [{ productId: 'PROD-029', qty: 1 }] },
+  ],
+
+  // Counter helpers (for generating new IDs)
+  pc: 34,    // next product ID number
+  sc: 7,     // next supplier ID number
+  sic: 9,    // next stockin ID number
+  soc: 6,    // next stockout ID number
+  mc: 20,    // next menu item ID number
+  uc: 2,     // next user ID number
+
+  catFilter: 'All',
+
+  // Users
+  users: [
+    { id: 'USR-001', email: 'admin@cafeeling.com', password: 'password', role: 'owner', added: '2026-04-01' }
+  ],
+
+  // Shift tracking — stockIn/stockOut recorded since last End Shift
+  shiftStockIn: [],
+  shiftStockOut: []
+};
+
+var barChart = null;
+
+function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  // Check against user list
+  const user = S.users.find(u => u.email === email && u.password === pass);
+  if (!user) { alert('Invalid email or password.'); return; }
+  document.getElementById('topbar-user-email').textContent = email;
+  document.getElementById('topbar-avatar').textContent = email[0].toUpperCase();
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+}
+
+function showPage(name, el) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(page => {
+    page.classList.remove('active');
+  });
+  // Show the selected page
+  const activePage = document.getElementById('page-' + name);
+  if (activePage) activePage.classList.add('active');
+
+  // Update active state of sidebar nav items
+  if (el && el.classList) {
+    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    const targetNav = document.querySelector(`.nav-item[data-page="${name}"]`);
+    if (targetNav) {
+      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+      targetNav.classList.add('active');
+    }
+  }
+
+  // Update the topbar title
+  const titles = {
+  dashboard: 'Cafe Dashboard',
+  products: 'Inventory',
+  categories: 'Categories',
+  suppliers: 'Suppliers',
+  stockin: 'Stock In',
+  stockout: 'Stock Out',
+  menu: 'Menu Recipes',
+  dailystock: 'Daily Stock Take',
+  manageusers: 'Team Access'
+};
+  document.getElementById('page-title').textContent = titles[name] || name;
+
+  // Refresh data for the active page (ensures live data)
+  if (name === 'dashboard') refreshDash();
+  if (name === 'products') renderProducts();
+  if (name === 'categories') renderCats();
+  if (name === 'suppliers') renderSuppliers();
+  if (name === 'stockin') renderStockIn();
+  if (name === 'stockout') renderStockOut();
+  if (name === 'menu') renderMenu();
+if (name === 'dailystock') renderDailyStock();
+if (name === 'manageusers') renderUsers();
+}
+
+function initApp(){
+  refreshDash();
+  renderProducts();
+  renderCats();
+  renderSuppliers();
+  renderStockIn();
+  renderStockOut();
+  
+}
+
+function gp(id){return S.products.find(function(p){return p.id===id;});}
+function gs(id){return S.suppliers.find(function(s){return s.id===id;});}
+
+function addStockInRecord(rec){
+  S.stockin.push(rec);
+  S.shiftStockIn.push(rec);
+  var p=gp(rec.product);
+  if(p) p.stock+=rec.qty;
+  return p;
+}
+
+function addStockOutRecord(rec){
+  S.stockout.push(rec);
+  S.shiftStockOut.push(rec);
+  var p=gp(rec.product);
+  if(p) p.stock-=rec.qty;
+  return p;
+}
+
+function stockBadge(p){
+  if(p.stock===0) return '<span class="badge badge-out">Out of Stock</span>';
+  if(p.stock<=p.reorder) return '<span class="badge badge-low">Low Stock</span>';
+  return '<span class="badge badge-good">Good</span>';
+}
+
+function today(){return new Date().toISOString().split('T')[0];}
+
+function refreshDash(){
+  document.getElementById('d-products').textContent=S.products.length;
+  var low=S.products.filter(function(p){return p.stock>0&&p.stock<=p.reorder;}).length;
+  document.getElementById('d-lowstock').textContent=low;
+  document.getElementById('d-suppliers').textContent=S.suppliers.length;
+  var tin=S.stockin.reduce(function(a,s){return a+s.qty;},0);
+  document.getElementById('d-stockin').textContent=tin;
+
+  var ri=S.stockin.slice(-4).reverse();
+  document.getElementById('recent-in').innerHTML=ri.map(function(r){
+    var p=gp(r.product);
+    return '<tr><td style="font-weight:600">'+(p?p.name:'—')+'</td><td><span class="badge badge-in">+'+r.qty+'</span></td><td style="color:var(--muted);font-size:12px">'+r.date+'</td></tr>';
+  }).join('');
+
+  var ro=S.stockout.slice(-4).reverse();
+  document.getElementById('recent-out').innerHTML=ro.map(function(r){
+    var p=gp(r.product);
+    return '<tr><td style="font-weight:600">'+(p?p.name:'—')+'</td><td><span class="badge badge-out">-'+r.qty+'</span></td><td style="color:var(--muted);font-size:12px">'+r.date+'</td></tr>';
+  }).join('');
+
+  drawBar();
+}
+
+function drawBar(){
+  var ctx=document.getElementById('barChart').getContext('2d');
+  var labels=S.categories;
+  var data=labels.map(function(c){return S.products.filter(function(p){return p.category===c;}).reduce(function(a,p){return a+p.stock;},0);});
+  if(barChart) barChart.destroy();
+  barChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels:labels,datasets:[{label:'Current Stock',data:data,backgroundColor:['rgba(138,91,57,.92)','rgba(112,69,43,.88)','rgba(162,123,93,.9)','rgba(198,160,130,.92)','rgba(124,87,65,.84)','rgba(90,52,36,.8)'],borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(90,52,36,.12)'},ticks:{color:'#6d513f'}},y:{grid:{color:'rgba(90,52,36,.12)'},ticks:{color:'#6d513f'}}}}
+  });
+}
+
+function renderProducts(search){
+  search=search||'';
+  // Filter buttons
+  var all=['All'].concat(S.categories);
+  document.getElementById('cat-filter-wrap').innerHTML=all.map(function(c){
+    return '<button class="filter-btn'+(S.catFilter===c?' active':'')+'" onclick="S.catFilter=\''+c+'\';renderProducts()">'+c+'</button>';
+  }).join('');
+
+  var prods=S.products;
+  if(S.catFilter!=='All') prods=prods.filter(function(p){return p.category===S.catFilter;});
+  if(search) prods=prods.filter(function(p){return p.name.toLowerCase().indexOf(search.toLowerCase())>=0||p.category.toLowerCase().indexOf(search.toLowerCase())>=0;});
+
+  document.getElementById('products-tbody').innerHTML=prods.map(function(p){
+    return '<tr><td style="color:var(--muted);font-size:12px">'+p.id+'</td><td style="font-weight:600">'+p.name+'</td><td>'+p.category+'</td><td style="color:var(--muted)">'+p.unit+'</td><td><b>'+p.stock+'</b> '+p.unit+'</td><td style="color:var(--muted)">'+p.reorder+'</td><td>'+stockBadge(p)+'</td><td><button class="btn-outline" onclick="editProduct(\''+p.id+'\')">Edit</button> <button class="btn-del" onclick="delProduct(\''+p.id+'\')">Del</button></td></tr>';
+  }).join('');
+}
+
+function delProduct(id){if(confirm('Delete this item?')){S.products=S.products.filter(function(p){return p.id!==id;});renderProducts();refreshDash();}}
+
+function renderCats() {
+  const container = document.getElementById('cat-grid');
+  if (!container) return;
+  
+  container.innerHTML = S.categories.map(cat => {
+    const productsInCat = S.products.filter(p => p.category === cat);
+    const productRows = productsInCat.map(p => `
+      <tr>
+        <td class="product-name">${escapeHtml(p.name)}</td>
+        <td class="product-stock">${p.stock} ${p.unit}</td>
+      </tr>
+    `).join('');
+    
+    return `
+      <div class="cat-card">
+        <div class="cat-card-header">
+          <div class="cat-name">${escapeHtml(cat)}</div>
+          <div class="cat-count">${productsInCat.length} items</div>
+        </div>
+        <table class="cat-product-table">
+          <tbody>
+            ${productRows || '<tr><td colspan="2" style="text-align:center; color:var(--muted);">No items</td></tr>'}
+          </tbody>
+        </table>
+       <div class="cat-card-actions">
+  <button class="btn-outline" style="padding: 4px 12px; font-size: 11px;" onclick="editCategory('${escapeHtml(cat)}')">✏️ Edit</button>
+  <button class="btn-del" style="padding: 4px 12px; font-size: 11px;" onclick="deleteCategory('${escapeHtml(cat)}')">🗑️ Delete</button>
+</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Helper to prevent XSS (though data is safe)
+function escapeHtml(str) {
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function renderSuppliers(search){
+  search=search||'';
+  var sups=S.suppliers;
+  if(search) sups=sups.filter(function(s){return s.name.toLowerCase().indexOf(search.toLowerCase())>=0||s.contact.toLowerCase().indexOf(search.toLowerCase())>=0;});
+  document.getElementById('sup-count-lbl').textContent='Total Suppliers: '+S.suppliers.length;
+  document.getElementById('suppliers-tbody').innerHTML=sups.map(function(s){
+    return '<tr><td style="color:var(--muted);font-size:12px">'+s.id+'</td><td style="font-weight:600">'+s.name+'</td><td>'+s.contact+'</td><td style="color:var(--muted)">'+s.phone+'</td><td>'+s.category+'</td><td><button class="btn-outline" onclick="editSupplier(\''+s.id+'\')">Edit</button> <button class="btn-del" onclick="delSupplier(\''+s.id+'\')">Del</button></td></tr>';
+  }).join('');
+}
+
+function delSupplier(id){if(confirm('Delete supplier?')){S.suppliers=S.suppliers.filter(function(s){return s.id!==id;});renderSuppliers();refreshDash();}}
+
+function renderStockIn(search){
+  search=search||'';
+  var recs=S.stockin;
+  if(search) recs=recs.filter(function(r){var p=gp(r.product);return p&&p.name.toLowerCase().indexOf(search.toLowerCase())>=0;});
+  document.getElementById('stockin-tbody').innerHTML=recs.map(function(r){
+    var p=gp(r.product); var s=gs(r.supplier);
+    return '<tr><td style="color:var(--muted);font-size:12px">'+r.id+'</td><td style="font-weight:600">'+(p?p.name:'—')+'</td><td>'+(p?p.category:'—')+'</td><td><span class="badge badge-in">+'+r.qty+'</span></td><td style="color:var(--muted)">'+(p?p.unit:'—')+'</td><td>'+(s?s.name:'—')+'</td><td style="color:var(--muted);font-size:12px">'+r.date+'</td><td><span class="badge badge-in">'+r.type+'</span></td><td><button class="btn-del" onclick="delStockIn(\''+r.id+'\')">Delete</button></td></tr>';
+  }).join('');
+}
+
+function renderStockOut(search){
+  search=search||'';
+  var recs=S.stockout;
+  if(search) recs=recs.filter(function(r){var p=gp(r.product);return p&&p.name.toLowerCase().indexOf(search.toLowerCase())>=0;});
+  document.getElementById('stockout-tbody').innerHTML=recs.map(function(r){
+    var p=gp(r.product);
+    return '<tr><td style="color:var(--muted);font-size:12px">'+r.id+'</td><td style="font-weight:600">'+(p?p.name:'—')+'</td><td>'+(p?p.category:'—')+'</td><td><span class="badge badge-out">-'+r.qty+'</span></td><td style="color:var(--muted)">'+(p?p.unit:'—')+'</td><td style="color:var(--muted);font-size:12px">'+r.date+'</td><td><span class="badge badge-out">'+r.type+'</span></td><td><button class="btn-del" onclick="delStockOut(\''+r.id+'\')">Delete</button></td></tr>';
+  }).join('');
+}
+
+function delStockIn(id){
+  var rec=S.stockin.find(function(r){return r.id===id;});
+  if(!rec) return;
+  var p=gp(rec.product);
+  if(p && p.stock < rec.qty){
+    alert('Cannot delete this stock in record because current stock would go negative.');
+    return;
+  }
+  if(!confirm('Delete this stock in record?')) return;
+  if(p) p.stock -= rec.qty;
+  S.stockin=S.stockin.filter(function(r){return r.id!==id;});
+  S.shiftStockIn=S.shiftStockIn.filter(function(r){return r.id!==id;});
+  renderStockIn(document.getElementById('stockin-search').value);
+  refreshDash();
+  renderProducts();
+  if (document.getElementById('page-dailystock').classList.contains('active')) renderDailyStock();
+  showToast('Stock In record deleted.');
+}
+
+function delStockOut(id){
+  var rec=S.stockout.find(function(r){return r.id===id;});
+  if(!rec) return;
+  var p=gp(rec.product);
+  if(!confirm('Delete this stock out record?')) return;
+  if(p) p.stock += rec.qty;
+  S.stockout=S.stockout.filter(function(r){return r.id!==id;});
+  S.shiftStockOut=S.shiftStockOut.filter(function(r){return r.id!==id;});
+  renderStockOut(document.getElementById('stockout-search').value);
+  refreshDash();
+  renderProducts();
+  if (document.getElementById('page-dailystock').classList.contains('active')) renderDailyStock();
+  showToast('Stock Out record deleted.');
+}
+
+
+
+// MODALS
+function openModal(type){
+  if(type==='product'){
+    document.getElementById('pm-title').textContent='Add Inventory Item';
+    document.getElementById('pm-id').value='';
+    document.getElementById('pm-name').value='';
+    document.getElementById('pm-unit').value='';
+    document.getElementById('pm-stock').value='0';
+    document.getElementById('pm-reorder').value='10';
+    document.getElementById('pm-cat').innerHTML=S.categories.map(function(c){return '<option>'+c+'</option>';}).join('');
+  }
+  if(type==='category'){
+    document.getElementById('cm-name').value='';
+    document.getElementById('cm-original').value='';
+    document.getElementById('category-modal-title').textContent='Add Category';
+  }
+  if(type==='supplier'){
+    document.getElementById('sm-title').textContent='Add Supplier';
+    document.getElementById('sm-id').value='';
+    document.getElementById('sm-name').value='';
+    document.getElementById('sm-contact').value='';
+    document.getElementById('sm-phone').value='';
+    document.getElementById('sm-cat').innerHTML=S.categories.map(function(c){return '<option>'+c+'</option>';}).join('');
+  }
+  if(type==='stockin'){
+    document.getElementById('si-item').innerHTML=S.products.map(function(p){return '<option value="'+p.id+'">'+p.name+'</option>';}).join('');
+    document.getElementById('si-supplier').innerHTML=S.suppliers.map(function(s){return '<option value="'+s.id+'">'+s.name+'</option>';}).join('');
+    document.getElementById('si-date').value=today();
+    document.getElementById('si-qty').value='1';
+    document.getElementById('si-type').value='Purchase';
+  }
+  if(type==='stockout'){
+    document.getElementById('so-item').innerHTML=S.products.map(function(p){return '<option value="'+p.id+'">'+p.name+' ('+p.stock+' '+p.unit+')</option>';}).join('');
+    document.getElementById('so-date').value=today();
+    document.getElementById('so-qty').value='1';
+    document.getElementById('so-type').value='Sale';
+  }
+  document.getElementById('modal-'+type).classList.add('open');
+}
+function closeModal(type) {
+  document.getElementById('modal-' + type).classList.remove('open');
+}
+function pad(n){return String(n).padStart(3,'0');}
+
+function saveProduct(){
+  var id=document.getElementById('pm-id').value;
+  var name=document.getElementById('pm-name').value.trim();
+  if(!name){alert('Please enter an item name.');return;}
+  var obj={id:id||'PROD-'+pad(S.pc++),name:name,category:document.getElementById('pm-cat').value,unit:document.getElementById('pm-unit').value||'pcs',stock:parseInt(document.getElementById('pm-stock').value)||0,reorder:parseInt(document.getElementById('pm-reorder').value)||10};
+  if(id){var i=S.products.findIndex(function(p){return p.id===id;});if(i>-1)S.products[i]=obj;}
+  else S.products.push(obj);
+  closeModal('product');renderProducts();refreshDash();renderCats();
+}
+
+function editProduct(id){
+  var p=gp(id);if(!p)return;
+  document.getElementById('pm-title').textContent='Edit Inventory Item';
+  document.getElementById('pm-id').value=p.id;
+  document.getElementById('pm-name').value=p.name;
+  document.getElementById('pm-unit').value=p.unit;
+  document.getElementById('pm-stock').value=p.stock;
+  document.getElementById('pm-reorder').value=p.reorder;
+  document.getElementById('pm-cat').innerHTML=S.categories.map(function(c){return '<option'+(c===p.category?' selected':'')+'>'+c+'</option>';}).join('');
+  document.getElementById('modal-product').classList.add('open');
+}
+
+function saveCategory(){
+  var name=document.getElementById('cm-name').value.trim();
+  if(!name){alert('Enter category name.');return;}
+  if(S.categories.indexOf(name)<0) S.categories.push(name);
+  closeModal('category');renderCats();renderProducts();
+}
+
+function saveSupplier(){
+  var id=document.getElementById('sm-id').value;
+  var name=document.getElementById('sm-name').value.trim();
+  if(!name){alert('Enter supplier name.');return;}
+  var obj={id:id||'SUP-'+pad(S.sc++),name:name,contact:document.getElementById('sm-contact').value,phone:document.getElementById('sm-phone').value,category:document.getElementById('sm-cat').value};
+  if(id){var i=S.suppliers.findIndex(function(s){return s.id===id;});if(i>-1)S.suppliers[i]=obj;}
+  else S.suppliers.push(obj);
+  closeModal('supplier');renderSuppliers();refreshDash();
+}
+
+function editSupplier(id){
+  var s=gs(id);if(!s)return;
+  document.getElementById('sm-title').textContent='Edit Supplier';
+  document.getElementById('sm-id').value=s.id;
+  document.getElementById('sm-name').value=s.name;
+  document.getElementById('sm-contact').value=s.contact;
+  document.getElementById('sm-phone').value=s.phone;
+  document.getElementById('sm-cat').innerHTML=S.categories.map(function(c){return '<option'+(c===s.category?' selected':'')+'>'+c+'</option>';}).join('');
+  document.getElementById('modal-supplier').classList.add('open');
+}
+
+function saveStockIn(){
+  var pid=document.getElementById('si-item').value;
+  var qty=parseInt(document.getElementById('si-qty').value)||0;
+  if(!pid||qty<=0){alert('Please fill all fields.');return;}
+  var rec={id:'SI-'+pad(S.sic++),product:pid,qty:qty,supplier:document.getElementById('si-supplier').value,date:document.getElementById('si-date').value,type:document.getElementById('si-type').value,notes:''};
+  addStockInRecord(rec);
+  closeModal('stockin');renderStockIn();refreshDash();renderProducts();
+  showToast('✅ Stock In recorded.');
+}
+
+function saveStockOut(){
+  var pid=document.getElementById('so-item').value;
+  var qty=parseInt(document.getElementById('so-qty').value)||0;
+  var p=gp(pid);
+  if(!p||qty<=0){alert('Please fill all fields.');return;}
+  if(qty>p.stock){alert('Insufficient stock! Available: '+p.stock+' '+p.unit);return;}
+  var rec={id:'SO-'+pad(S.soc++),product:pid,qty:qty,date:document.getElementById('so-date').value,type:document.getElementById('so-type').value,notes:''};
+  p=addStockOutRecord(rec);
+  if (p.stock <= p.reorder) showToast(`⚠️ Low stock alert: ${p.name} (${p.stock} ${p.unit} left)`);
+  closeModal('stockout');renderStockOut();refreshDash();renderProducts();
+  showToast('✅ Stock Out recorded.');
+}
+function editCategory(catName) {
+  document.getElementById('cm-name').value = catName;
+  document.getElementById('cm-original').value = catName;  // store original name
+  document.getElementById('category-modal-title').textContent = 'Edit Category';
+  document.getElementById('modal-category').classList.add('open');
+}
+
+function deleteCategory(catName) {
+  if (!confirm(`Delete category "${catName}"? All items in this category will lose their category assignment.`)) return;
+  // Remove category
+  S.categories = S.categories.filter(c => c !== catName);
+  // Set products with this category to empty or first available category
+  S.products.forEach(p => {
+    if (p.category === catName) p.category = S.categories[0] || 'Uncategorized';
+  });
+  // Update suppliers category list
+  S.suppliers.forEach(s => {
+    if (s.category === catName) s.category = S.categories[0] || 'Uncategorized';
+  });
+  // Refresh all UI
+  renderCats();
+  renderProducts();
+  renderSuppliers();
+  
+  refreshDash();
+  showToast(`Category "${catName}" deleted.`);
+}
+
+function saveCategoryEdit() {
+  const newName = document.getElementById('cm-name').value.trim();
+  const oldName = document.getElementById('cm-original').value;
+  if (!newName) { alert('Category name cannot be empty.'); return; }
+  if (oldName && newName === oldName) { closeModal('category'); return; }
+  if (S.categories.includes(newName)) { alert('Category already exists.'); return; }
+  if (!oldName) {
+    S.categories.push(newName);
+    renderCats();
+    renderProducts();
+    renderSuppliers();
+    refreshDash();
+    closeModal('category');
+    showToast(`Category "${newName}" added.`);
+    return;
+  }
+  // Update category list
+  const idx = S.categories.indexOf(oldName);
+  if (idx !== -1) S.categories[idx] = newName;
+  // Update products
+  S.products.forEach(p => { if (p.category === oldName) p.category = newName; });
+  // Update suppliers
+  S.suppliers.forEach(s => { if (s.category === oldName) s.category = newName; });
+  // Refresh UI
+  renderCats();
+  renderProducts();
+  renderSuppliers();
+  refreshDash();
+  
+  closeModal('category');
+  showToast(`Category renamed to "${newName}".`);
+}
+</script>
+</body>
+</html>
